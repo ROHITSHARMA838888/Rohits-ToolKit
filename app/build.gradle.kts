@@ -22,6 +22,22 @@ android {
         }
     }
 
+    signingConfigs {
+        create("release") {
+            val keystorePath = System.getenv("ROHIT_KEYSTORE_PATH") ?: project.findProperty("ROHIT_KEYSTORE_PATH") as String?
+            val keystorePass = System.getenv("ROHIT_KEYSTORE_PASSWORD") ?: project.findProperty("ROHIT_KEYSTORE_PASSWORD") as String?
+            val keyAlias = System.getenv("ROHIT_KEY_ALIAS") ?: project.findProperty("ROHIT_KEY_ALIAS") as String?
+            val keyPass = System.getenv("ROHIT_KEY_PASSWORD") ?: project.findProperty("ROHIT_KEY_PASSWORD") as String?
+
+            if (keystorePath != null && keystorePass != null && keyAlias != null && keyPass != null) {
+                storeFile = file(keystorePath)
+                storePassword = keystorePass
+                this.keyAlias = keyAlias
+                this.keyPassword = keyPass
+            }
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
@@ -29,6 +45,10 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            val releaseSigning = signingConfigs.getByName("release")
+            if (releaseSigning.storeFile != null && releaseSigning.storeFile!!.exists()) {
+                signingConfig = releaseSigning
+            }
         }
         debug {
             applicationIdSuffix = ".debug"
